@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Entry Task - Login/Register</title>
+  <style>
+    :root {
+      /* Dark Theme Colors */
+      --bg-main: #181c24;
+      --bg-container: #222733;
+      --input-bg: #23283a;
+      --input-border: #374151;
+      --primary: #4f8cff;
+      --primary-hover: #2563eb;
+      --text-main: #e0e6ed;
+      --text-muted: #a0aec0;
+      --toggle-bg: #23283a;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--bg-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text-main);
+      transition: background 0.3s, color 0.3s;
+    }
+    .container {
+      background: var(--bg-container);
+      padding: 24px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      width: 100%;
+      max-width: 350px;
+      position: relative;
+    }
+    .toggle-theme-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--toggle-bg);
+      color: var(--text-main);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, color 0.3s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .toggle-btns {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .toggle-btns button {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      background: #23283a;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 7px 7px 0 0;
+      transition: background 0.2s, color 0.2s;
+      font-weight: 500;
+    }
+    .toggle-btns button.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    input[type="text"], input[type="password"] {
+      background: var(--input-bg);
+      color: var(--text-main);
+      padding: 11px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      font-size: 16px;
+      outline: none;
+      transition: border 0.2s, background 0.3s, color 0.3s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border: 1.5px solid var(--primary);
+    }
+    button[type="submit"] {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 13px 0;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover {
+      background: var(--primary-hover);
+    }
+    ::placeholder {
+      color: var(--text-muted);
+      opacity: 1;
+    }
+    @media (max-width: 400px) {
+      .container {
+        padding: 16px 4px;
+      }
+      input, button {
+        font-size: 15px;
+      }
+      .toggle-theme-btn {
+        top: 6px;
+        right: 6px;
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+    }
+
+    /* Light Theme */
+    body.light {
+      --bg-main: #f6f8fa;
+      --bg-container: #ffffff;
+      --input-bg: #f2f4f8;
+      --input-border: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text-main: #1a202c;
+      --text-muted: #64748b;
+      --toggle-bg: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
+
+{% if messages %}
+  <ul style="padding: 0; list-style: none;">
+    {% for message in messages %}
+      <li style="color: {% if message.tags == 'error' %}red{% else %}limegreen{% endif %}; margin-bottom: 10px;">
+        {{ message }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+
+    <div class="toggle-btns">
+      <button id="loginBtn" class="active" onclick="showForm('login')">Login</button>
+      <button id="registerBtn" onclick="showForm('register')">Register</button>
+    </div>
+
+    <form id="loginForm" method="post" action="{% url 'login_user' %}">
+  {% csrf_token %}
+      <input type="text" id="loginId" name = "loginId" placeholder="User ID" maxlength="12" required>
+      <input type="password" id="loginPassword" name = "loginPassword" placeholder="4-digit Password" pattern="\d{4}" maxlength="4" required>
+      <button type="submit">Login</button>
+    </form>
+    <form id="registerForm" style="display:none;" method="post" action="{% url 'register_user' %}">
+  {% csrf_token %}
+      <input type="text" id="regName" name= "regName" placeholder="Full Name" maxlength="30" required>
+      <input type="text" id="regId" name = "regId" placeholder="User ID" maxlength="12" required>
+      <input type="password" id="regPassword" name = "regPassword" placeholder="4-digit Password" pattern="\d{4}" maxlength="4" required>
+      <input type="password" id="regConfirmPassword" name = "regConfirmPassword" placeholder="Confirm Password" pattern="\d{4}" maxlength="4" required>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+  <script>
+    function showForm(form) {
+      document.getElementById('loginForm').style.display = form === 'login' ? 'flex' : 'none';
+      document.getElementById('registerForm').style.display = form === 'register' ? 'flex' : 'none';
+      document.getElementById('loginBtn').classList.toggle('active', form === 'login');
+      document.getElementById('registerBtn').classList.toggle('active', form === 'register');
+    }
+
+    // Theme Toggle Logic
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const body = document.body;
+
+    // Set initial theme based on user preference or default to dark
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      body.classList.add('light');
+      themeToggleBtn.textContent = '🌙';
+      themeToggleBtn.title = 'Switch to dark theme';
+    } else {
+      themeToggleBtn.textContent = '☀️';
+      themeToggleBtn.title = 'Switch to light theme';
+    }
+
+    themeToggleBtn.addEventListener('click', function() {
+      body.classList.toggle('light');
+      if (body.classList.contains('light')) {
+        themeToggleBtn.textContent = '🌙';
+        themeToggleBtn.title = 'Switch to dark theme';
+      } else {
+        themeToggleBtn.textContent = '☀️';
+        themeToggleBtn.title = 'Switch to light theme';
+      }
+    });
+  </script>
+</body>
+</html>

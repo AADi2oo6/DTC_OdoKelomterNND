@@ -1,0 +1,257 @@
+{% comment %} {% extends 'base.html' %}  <!-- If you have a base template --> {% endcomment %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Same styling as EntryForm.html -->
+  <style>
+    :root {
+      --bg-main: #181c24;
+      --bg-container: #222733;
+      --input-bg: #23283a;
+      --input-border: #374151;
+      --primary: #4f8cff;
+      --primary-hover: #2563eb;
+      --text-main: #e0e6ed;
+      --text-muted: #a0aec0;
+      --highlight: #95d68c;
+      --highlight-text: #23481b;
+      --toggle-bg: #23283a;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .container {
+      background: var(--bg-container);
+      margin-top: 24px;
+      padding: 20px 12px 16px 12px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+    .toggle-theme-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--toggle-bg);
+      color: var(--text-main);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, color 0.3s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    label {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    input[type="text"], input[type="number"], input[type="date"], select {
+      background: var(--input-bg);
+      color: var(--text-main);
+      padding: 10px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      font-size: 16px;
+      outline: none;
+      transition: border 0.2s, background 0.3s, color 0.3s;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus {
+      border: 1.5px solid var(--primary);
+    }
+    .highlight {
+      background: var(--highlight);
+      color: var(--highlight-text);
+      font-weight: bold;
+      border: 1.5px solid #4caf50;
+    }
+    button[type="submit"] {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 13px 0;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover {
+      background: var(--primary-hover);
+    }
+    ::placeholder {
+      color: var(--text-muted);
+      opacity: 1;
+    }
+    /* Custom styles for datalist search input */
+    input[list]::-webkit-calendar-picker-indicator {
+      display: none !important;
+    }
+    @media (max-width: 450px) {
+      .container {
+        padding: 10px 2px 10px 2px;
+        margin-top: 8px;
+      }
+      input, button, select {
+        font-size: 15px;
+      }
+      .toggle-theme-btn {
+        top: 6px;
+        right: 6px;
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+    }
+    /* Light Theme */
+    body.light {
+      --bg-main: #f6f8fa;
+      --bg-container: #ffffff;
+      --input-bg: #f2f4f8;
+      --input-border: #cbd5e1;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --text-main: #1a202c;
+      --text-muted: #64748b;
+      --highlight: #c6f6d5;
+      --highlight-text: #22543d;
+      --toggle-bg: #e2e8f0;
+    }
+    /* Paste all CSS from EntryForm.html here */
+    .card {
+      background: var(--bg-container);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .search-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
+    <h2>Update Bus Data</h2>
+    
+    <!-- Search Form -->
+    <form method="GET" class="search-box">
+<input
+    list="busnos"
+    name="bus_no"
+    id="bus_no"
+    placeholder="Type or select bus number"
+    value="{{ selected_bus|default:'' }}"
+    style="flex:1; min-width:120px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-radius:6px; padding:10px; font-size:16px; outline:none; transition:border 0.2s, background 0.3s, color 0.3s;"
+    autocomplete="off"
+>
+<datalist id="busnos">
+    <option value="">All Buses</option>
+    {% for bus in bus_numbers %}
+        <option value="{{ bus }}">{{ bus }}</option>
+    {% endfor %}
+</datalist>
+<input type="date" name="date" value="{{ selected_date }}" style="flex:1">
+<button type="submit" style="flex:0.3">🔍 Search</button>
+</form>
+
+    <a href="http://127.0.0.1:8000/EntryForm/"style="display:inline-block;margin-bottom:18px;background:var(--input-bg);color:var(--primary);padding:8px 18px;border-radius:5px;text-decoration:none;font-weight:500;transition:background 0.2s;">
+        ← Back
+    </a>
+
+    <!-- Entries as Cards -->
+    {% for entry in entries %}
+    <div class="card">
+      <p><strong>{{ entry.bus_no }}</strong> | {{ entry.date }} | {{ entry.shift }}</p>
+      <p>OUT: {{ entry.out_kms }} | IN: {% if entry.in_kms %}{{ entry.in_kms }}{% else %}--{% endif %}</p>
+      <p>DIFF: {% if entry.diff %}{{ entry.diff }}{% else %}--{% endif %}</p>
+    <a href="{% url 'edit_entry' entry.id %}" class="edit-btn">✏️ Edit</a>
+    <style>
+      .edit-btn {
+        display: inline-block;
+        background: var(--primary);
+        color: #fff;
+        padding: 7px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        margin-top: 8px;
+        transition: background 0.2s, color 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      }
+      .edit-btn:hover {
+        background: var(--primary-hover);
+        color: #fff;
+        text-decoration: none;
+      }
+    </style>
+    </div>
+    {% empty %}
+    <p>No entries found.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Same theme toggle JS as EntryForm.html -->
+   <script>
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const body = document.body;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      body.classList.add('light');
+      themeToggleBtn.textContent = '🌙';
+      themeToggleBtn.title = 'Switch to dark theme';
+    } else {
+      themeToggleBtn.textContent = '☀️';
+      themeToggleBtn.title = 'Switch to light theme';
+    }
+    themeToggleBtn.addEventListener('click', function() {
+      body.classList.toggle('light');
+      if (body.classList.contains('light')) {
+        themeToggleBtn.textContent = '🌙';
+        themeToggleBtn.title = 'Switch to dark theme';
+      } else {
+        themeToggleBtn.textContent = '☀️';
+        themeToggleBtn.title = 'Switch to light theme';
+      }
+    });
+
+   </script>
+</body>
+</html>
