@@ -4,6 +4,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <!-- Same styling as EntryForm.html -->
   <style>
     :root {
@@ -31,15 +33,33 @@
       transition: background 0.3s, color 0.3s;
     }
     .container {
-      background: var(--bg-container);
-      margin-top: 24px;
-      padding: 20px 12px 16px 12px;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-      width: 100%;
-      max-width: 400px;
-      position: relative;
-    }
+  background: var(--bg-container);
+  margin-top: 24px;
+  padding: 20px 12px 16px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .container {
+    max-width: 100vw;
+    width: 100vw;
+    min-width: 0;
+    margin: 0;
+    border-radius: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  body {
+    padding: 0;
+    margin: 0;
+  }
+}
+
     .toggle-theme-btn {
       position: absolute;
       top: 10px;
@@ -164,6 +184,20 @@
       gap: 8px;
       margin-bottom: 20px;
     }
+    form.search-box {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.card {
+  width: 100%;
+  box-sizing: border-box;
+}
+html, body {
+  width: 100vw;
+  overflow-x: hidden;
+}
+
   </style>
 </head>
 <body>
@@ -172,27 +206,29 @@
     <h2>Update Bus Data</h2>
     
     <!-- Search Form -->
-    <form method="GET" class="search-box">
-<input
-    list="busnos"
-    name="bus_no"
-    id="bus_no"
-    placeholder="Type or select bus number"
-    value="{{ selected_bus|default:'' }}"
-    style="flex:1; min-width:120px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-radius:6px; padding:10px; font-size:16px; outline:none; transition:border 0.2s, background 0.3s, color 0.3s;"
-    autocomplete="off"
->
-<datalist id="busnos">
-    <option value="">All Buses</option>
-    {% for bus in bus_numbers %}
-        <option value="{{ bus }}">{{ bus }}</option>
-    {% endfor %}
-</datalist>
-<input type="date" name="date" value="{{ selected_date }}" style="flex:1">
-<button type="submit" style="flex:0.3">🔍 Search</button>
-</form>
+    <form method="GET" class="search-box" autocomplete="off">
+      <div style="flex:1; min-width:120px; position:relative;">
+        <input
+          type="text"
+          id="bus_no_input"
+          name="bus_no"
+          placeholder="Type or select bus number"
+          value="{{ selected_bus|default:'' }}"
+          style="width:94%; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-radius:6px; padding:10px; font-size:16px; outline:none; transition:border 0.2s, background 0.3s, color 0.3s;"
+          autocomplete="off"
+        >
+        <ul id="bus_no_dropdown" style="display:none; position:absolute; left:0; right:0; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-top:none; border-radius:0 0 6px 6px; max-height:160px; overflow-y:auto; z-index:1000; margin:0; padding:0; list-style:none;">
+          <li style="padding:10px; cursor:pointer;" data-value="">All Buses</li>
+          {% for bus in bus_numbers %}
+            <li style="padding:10px; cursor:pointer;" data-value="{{ bus }}">{{ bus }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <input type="date" name="date" value="{{ selected_date }}" style="flex:1">
+      <button type="submit" style="flex:0.3">🔍 Search</button>
+    </form>
 
-    <a href="http://127.0.0.1:8000/EntryForm/"style="display:inline-block;margin-bottom:18px;background:var(--input-bg);color:var(--primary);padding:8px 18px;border-radius:5px;text-decoration:none;font-weight:500;transition:background 0.2s;">
+    <a href="{% url 'entry' %}" style="display:inline-block;margin-bottom:18px;background:var(--input-bg);color:var(--primary);padding:8px 18px;border-radius:5px;text-decoration:none;font-weight:500;transition:background 0.2s;">
         ← Back
     </a>
 
@@ -202,35 +238,73 @@
       <p><strong>{{ entry.bus_no }}</strong> | {{ entry.date }} | {{ entry.shift }}</p>
       <p>OUT: {{ entry.out_kms }} | IN: {% if entry.in_kms %}{{ entry.in_kms }}{% else %}--{% endif %}</p>
       <p>DIFF: {% if entry.diff %}{{ entry.diff }}{% else %}--{% endif %}</p>
-    <a href="{% url 'edit_entry' entry.id %}" class="edit-btn">✏️ Edit</a>
-    <style>
-      .edit-btn {
-        display: inline-block;
-        background: var(--primary);
-        color: #fff;
-        padding: 7px 16px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 500;
-        margin-top: 8px;
-        transition: background 0.2s, color 0.2s;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-      }
-      .edit-btn:hover {
-        background: var(--primary-hover);
-        color: #fff;
-        text-decoration: none;
-      }
-    </style>
+      <a href="{% url 'edit_entry' entry.id %}" class="edit-btn">✏️ Edit</a>
+      <style>
+        .edit-btn {
+          display: inline-block;
+          background: var(--primary);
+          color: #fff;
+          padding: 7px 16px;
+          border-radius: 5px;
+          text-decoration: none;
+          font-size: 15px;
+          font-weight: 500;
+          margin-top: 8px;
+          transition: background 0.2s, color 0.2s;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .edit-btn:hover {
+          background: var(--primary-hover);
+          color: #fff;
+          text-decoration: none;
+        }
+      </style>
     </div>
     {% empty %}
     <p>No entries found.</p>
     {% endfor %}
   </div>
 
-  <!-- Same theme toggle JS as EntryForm.html -->
-   <script>
+  <!-- Theme toggle and dropdown filter JS -->
+  <script>
+    // Custom dropdown filter for bus number search
+    const busInput = document.getElementById('bus_no_input');
+    const dropdown = document.getElementById('bus_no_dropdown');
+    const busOptions = dropdown.getElementsByTagName('li');
+
+    busInput.addEventListener('focus', function() {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
+    });
+    busInput.addEventListener('input', function() {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
+    });
+    busInput.addEventListener('blur', function() {
+      setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    });
+    dropdown.addEventListener('mousedown', function(e) {
+      if (e.target.tagName === 'LI') {
+        busInput.value = e.target.getAttribute('data-value');
+        dropdown.style.display = 'none';
+      }
+    });
+
+    function filterBusDropdown() {
+      const filter = busInput.value.trim().toLowerCase();
+      let anyVisible = false;
+      for (let li of busOptions) {
+        if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
+          li.style.display = '';
+          anyVisible = true;
+        } else {
+          li.style.display = 'none';
+        }
+      }
+      dropdown.style.display = anyVisible ? 'block' : 'none';
+    }
+
+    // Theme toggle
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const body = document.body;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
@@ -251,7 +325,7 @@
         themeToggleBtn.title = 'Switch to light theme';
       }
     });
-
-   </script>
+  </script>
 </body>
+
 </html>

@@ -148,12 +148,11 @@
       --text-muted: #64748b;
       --highlight: #c6f6d5;
       --highlight-text: #22543d;
-      --toggle-bg: #e2e8f0;
+      --toggle-bg: #e2e8f0; 
     }
   </style>
 </head>
 <body>
-  
   <div class="container">
     {% if messages %}
     {% for message in messages %}
@@ -161,7 +160,7 @@
         {{ message }}
       </div>
     {% endfor %}
-  {% endif %}
+    {% endif %}
     <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
     <h2>Bus Data Entry</h2>
     <form id="busForm" method="POST">
@@ -177,22 +176,23 @@
           <option value="Evening">Evening</option>
         </select>
       </div>
-      <div class="form-row">
-        <label for="BusNO">Bus Number: </label>
+      <!-- Custom searchable dropdown for Bus Number -->
+      <div class="form-row" style="position:relative;">
+        <label for="busno_input">Bus Number:</label>
         <input 
-          list="busnos" 
-          id="busno" 
-          name="busno" 
-          required 
-          autocomplete="off" 
+          type="text"
+          id="busno_input"
+          name="busno"
           placeholder="Type or select bus number"
+          autocomplete="off"
+          required
           style="background: var(--input-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: 16px; outline: none; transition: border 0.2s, background 0.3s, color 0.3s;"
         >
-        <datalist id="busnos">
+        <ul id="busno_dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-top:none; border-radius:0 0 6px 6px; max-height:160px; overflow-y:auto; z-index:1000; margin:0; padding:0; list-style:none;">
           {% for bus in bus_numbers %}
-        <option value="{{ bus }}">
+            <li style="padding:10px; cursor:pointer;">{{ bus }}</li>
           {% endfor %}
-        </datalist>
+        </ul>
       </div>
       <div class="form-row">
         <label for="outkms">OUT KMs</label>
@@ -211,27 +211,62 @@
         <input type="number" id="soc" name="soc" placeholder="0 to 100 %" min="0" max="100" step="0.1" >
       </div>
       <div class="form-row">
-        <label for="soc">SOC_in (%)</label>
-        <input type="number" id="soc" name="soc_in" placeholder="0 to 100 %" min="0" max="100" step="0.1" >
+        <label for="soc_in">SOC_in (%)</label>
+        <input type="number" id="soc_in" name="soc_in" placeholder="0 to 100 %" min="0" max="100" step="0.1" >
       </div>
-      
       <button type="submit">Submit</button>
     </form>
     <div style="text-align:center; margin-top:20px">
-  <a href="{% url 'update_list' %}" style="text-decoration:none">
-    <button style="background:#666; padding:8px 16px">🔄 Update Existing Values</button>
-  </a>
-
-</div>
-
+      <a href="{% url 'update_list' %}" style="text-decoration:none">
+        <button style="background:#666; padding:8px 16px">🔄 Update Existing Values</button>
+      </a>
+    </div>
   </div>
   <script>
+    // Custom dropdown filter for bus number
+    const busInput = document.getElementById('busno_input');
+    const dropdown = document.getElementById('busno_dropdown');
+    const busOptions = dropdown.getElementsByTagName('li');
+
+    busInput.addEventListener('focus', function() {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
+    });
+    busInput.addEventListener('input', function() {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
+    });
+    busInput.addEventListener('blur', function() {
+      setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+    });
+    dropdown.addEventListener('mousedown', function(e) {
+      if (e.target.tagName === 'LI') {
+        busInput.value = e.target.textContent;
+        dropdown.style.display = 'none';
+      }
+    });
+
+    function filterBusDropdown() {
+      const filter = busInput.value.trim().toLowerCase();
+      let anyVisible = false;
+      for (let li of busOptions) {
+        if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
+          li.style.display = '';
+          anyVisible = true;
+        } else {
+          li.style.display = 'none';
+        }
+      }
+      dropdown.style.display = anyVisible ? 'block' : 'none';
+    }
+
+    // SOC input validation
     const socInput = document.getElementById('soc');
-socInput.addEventListener('input', function() {
-  let value = parseFloat(this.value);
-  if (value > 100) this.value = 100;
-  if (value < 0) this.value = 0;
-});
+    socInput.addEventListener('input', function() {
+      let value = parseFloat(this.value);
+      if (value > 100) this.value = 100;
+      if (value < 0) this.value = 0;
+    });
 
     // Theme toggle
     const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -285,7 +320,7 @@ socInput.addEventListener('input', function() {
     shiftSelect.addEventListener('change', function() {
       localStorage.setItem('shiftValue', shiftSelect.value);
     });
-
   </script>
 </body>
+
 </html>
