@@ -10,6 +10,6 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Bus_Data)
 class BusDataAdmin(ExportMixin, admin.ModelAdmin):  # ✅ add ExportMixin
-    list_display = ('date', 'shift', 'bus_no', 'out_kms', 'in_kms', 'diff', 'soc', 'soc_in', 'time_of_submission')
-    search_fields = ('bus_no', 'shift')
-    list_filter = ('date', 'shift', 'bus_no')
+    list_display = ('date', 'shift', 'bus_no', 'out_kms', 'in_kms', 'diff', 'soc', 'soc_in', 'time_of_submission','user_name')
+    search_fields = ('bus_no', 'shift',"user_name")
+    list_filter = ('date', 'shift', 'bus_no',"user_name")

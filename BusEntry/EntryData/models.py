@@ -20,6 +20,7 @@ class Bus_Data(models.Model):
     soc = models.CharField(max_length=20, null=True, blank=True)
     soc_in = models.CharField(max_length=20, null=True, blank=True, default="Not Provided")
     time_of_submission = models.TimeField()
+    user_name= models.CharField(max_length=50 ,default="Admin")
 
     def __str__(self):
         return f"{self.date} - Bus {self.bus_no} ({self.shift})"

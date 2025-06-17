@@ -22,37 +22,7 @@ BUS_NUMBERS = [
     "7216", "7217", "7219", "7222", "7228", "7231", "7232", "7233", "7234", "7238",
     "7240", "7241", "7242", "7248", "7249", "7256", "7265", "7268", "7271", "7274"
 ]
-def Entry(request):
-    if request.method == 'POST':
-        date = request.POST.get('date')
-        shift = request.POST.get('shift')
-        bus_no = request.POST.get('busno')
-        out_kms = float(request.POST.get('outkms'))
-        in_kms = float(request.POST.get('inkms')) if request.POST.get('inkms') is not "" else 0.0
-        soc = request.POST.get('soc') or "Not Provided"
-        soc_in = request.POST.get('soc_in') or "Not Provided"
-        diff = abs(in_kms-out_kms)
-        india_tz = pytz_timezone('Asia/Kolkata')
-        time_of_submission = timezone.now().astimezone(india_tz).strftime('%H:%M')
 
-        # Save to database
-        Bus_Data.objects.create(
-            date=date,
-            shift=shift,
-            bus_no=bus_no,
-            out_kms=out_kms,
-            in_kms=in_kms,
-            diff=diff,
-            soc=soc,
-            soc_in = soc_in,
-            time_of_submission=time_of_submission
-        )
-        messages.success(request, "✅ Bus data submitted successfully!")
-        return redirect('entry')  # change to your url name
-
-    return render(request, 'EntryForm.html', {
-        'bus_numbers': BUS_NUMBERS,
-    })
 
 def index(request):
     return render(request, 'index.html')
@@ -89,6 +59,7 @@ def login_user(request):
             user = CustomUser.objects.get(user_id=user_id)
             if check_password(password, user.password):
                 request.session['user_id'] = user.user_id
+                request.session['user_name'] = user.name   # Store the name in session
                 messages.success(request, "Login successful!")
                 return redirect('entry')
             else:
@@ -97,6 +68,39 @@ def login_user(request):
             messages.error(request, "User ID not found.")
         return redirect('index')
     
+def Entry(request):
+    user_name = request.session.get('user_name')
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        shift = request.POST.get('shift')
+        bus_no = request.POST.get('busno')
+        out_kms = float(request.POST.get('outkms'))
+        in_kms = float(request.POST.get('inkms')) if request.POST.get('inkms') is not "" else 0.0
+        soc = request.POST.get('soc') or "Not Provided"
+        soc_in = request.POST.get('soc_in') or "Not Provided"
+        diff = abs(in_kms-out_kms)
+        india_tz = pytz_timezone('Asia/Kolkata')
+        time_of_submission = timezone.now().astimezone(india_tz).strftime('%H:%M')
+
+        # Save to database
+        Bus_Data.objects.create(
+            date=date,
+            shift=shift,
+            bus_no=bus_no,
+            out_kms=out_kms,
+            in_kms=in_kms,
+            diff=diff,
+            soc=soc,
+            soc_in = soc_in,
+            time_of_submission=time_of_submission,
+            user_name = user_name
+        )
+        messages.success(request, "✅ Bus data submitted successfully!")
+        return redirect('entry')  # change to your url name
+
+    return render(request, 'EntryForm.html', {
+        'bus_numbers': BUS_NUMBERS,
+    })    
 
 def update_list(request):
     # Get distinct bus numbers from database
