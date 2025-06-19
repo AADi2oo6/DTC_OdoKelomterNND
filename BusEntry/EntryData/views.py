@@ -5,6 +5,7 @@ from .models import CustomUser
 from django.utils import timezone
 from .models import Bus_Data
 from pytz import timezone as pytz_timezone
+from .sheets_utils import append_to_sheet
 
 # Bus numbers list
 BUS_NUMBERS = [
@@ -68,6 +69,8 @@ def login_user(request):
             messages.error(request, "User ID not found.")
         return redirect('index')
     
+from .sheets_utils import append_to_sheet, update_in_sheet
+
 def Entry(request):
     user_name = request.session.get('user_name')
     if request.method == 'POST':
@@ -95,7 +98,8 @@ def Entry(request):
         india_tz = pytz_timezone('Asia/Kolkata')
         time_of_submission = timezone.now().astimezone(india_tz).strftime('%H:%M')
 
-        Bus_Data.objects.create(
+        # Create database entry
+        entry = Bus_Data.objects.create(
             date=date,
             shift=shift,
             bus_no=bus_no,
@@ -107,7 +111,31 @@ def Entry(request):
             time_of_submission=time_of_submission,
             user_name=user_name
         )
-        messages.success(request, f"✅ Bus data for {bus_no}, {shift}, and {date} submitted successfully!")
+        
+        # Prepare data for Google Sheet (include ID as last column)
+        sheet_data = [
+            date,
+            shift,
+            bus_no,
+            str(out_kms),
+            str(in_kms),
+            str(diff),
+            soc,
+            soc_in,
+            time_of_submission,
+            user_name
+        ]
+        SheetStatus = ""
+        # Append to Google Sheet
+        try:
+            append_to_sheet(sheet_data)
+            SheetStatus = "✅ Google Sheet Updated"
+        except Exception as e:
+            SheetStatus = f"Google Sheets error: {e}"
+            print(f"Google Sheets error: {e}")
+            messages.info(request, "✅ Data saved locally. Google Sheets update failed.")
+        
+        messages.success(request, f"✅ Bus data for {bus_no}, {shift}, and {date} submitted successfully! {SheetStatus}")
         return redirect('entry')
 
     return render(request, 'EntryForm.html', {
@@ -137,6 +165,7 @@ def update_list(request):
         'selected_date': selected_date,
     })
 
+
 def edit_entry(request, entry_id):
     entry = Bus_Data.objects.get(id=entry_id)
     if request.method == 'POST':
@@ -145,15 +174,47 @@ def edit_entry(request, entry_id):
         soc = request.POST.get('soc')
         soc_in = request.POST.get("soc_in")
         
+        # Store original values for Google Sheets update
+        original_values = {
+            'in_kms': entry.in_kms,
+            'soc': entry.soc,
+            'soc_in': entry.soc_in,
+            'diff': entry.diff
+        }
+        
+        # Update fields if provided
         if in_kms:
             entry.in_kms = float(in_kms)
             entry.diff = abs(entry.in_kms - entry.out_kms)
         if soc:
             entry.soc = soc
         if soc_in:
-            entry.soc_in=soc_in
+            entry.soc_in = soc_in
         
         entry.save()
+        india_tz = pytz_timezone('Asia/Kolkata')
+        # Prepare data for Google Sheet update
+        sheet_data = {
+            'date': entry.date.strftime('%Y-%m-%d'),  # or isoformat() if that's your sheet's format
+            'shift': entry.shift,
+            'bus_no': entry.bus_no,
+            'out_kms': str(entry.out_kms),
+            'in_kms': str(entry.in_kms),
+            'diff': str(entry.diff),
+            'soc': entry.soc,
+            'soc_in': entry.soc_in,
+            'time':timezone.now().astimezone(india_tz).strftime('%H:%M'),
+            'user': entry.user_name,
+        }
+        print(sheet_data)
+        # Update Google Sheet
+        try:
+            update_in_sheet(sheet_data)
+            print("===================Success==========================")
+        except Exception as e:
+            print(f"Google Sheets update error: {e}")
+            messages.info(request, "✅ Data updated locally. Google Sheets update failed.")
+        
         messages.success(request, "✅ Entry updated successfully!")
         return redirect('update_list')
     

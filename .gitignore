@@ -1,0 +1,13 @@
+# Google credentials
+credentials.json
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+venv/
+
+# Django secret key
+secret_key.txt

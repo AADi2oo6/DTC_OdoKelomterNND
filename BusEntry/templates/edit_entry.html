@@ -171,6 +171,25 @@
 </head>
 <body>
   <div class="container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="django-message" style="padding:10px;
+                    background:{% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %};
+                    color:{% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %};
+                    border-radius:5px;
+                    margin-bottom:10px;
+                    border:1px solid {% if message.tags == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};">
+          {{ message }}
+        </div>
+      {% endfor %}
+      <script>
+        setTimeout(function() {
+          document.querySelectorAll('.django-message').forEach(function(el) {
+            el.style.display = 'none';
+          });
+        }, 4000);
+      </script>
+    {% endif %}
     <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
     <h2>Edit Entry: {{ entry.bus_no }}</h2>
     <form method="POST">
