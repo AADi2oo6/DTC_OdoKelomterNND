@@ -155,11 +155,23 @@
 <body>
   <div class="container">
     {% if messages %}
-    {% for message in messages %}
-      <div style="padding:10px;background:#d4edda;color:#155724;border-radius:5px;margin-bottom:10px;">
-        {{ message }}
-      </div>
-    {% endfor %}
+      {% for message in messages %}
+        <div class="django-message" style="padding:10px;
+                    background:{% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %};
+                    color:{% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %};
+                    border-radius:5px;
+                    margin-bottom:10px;
+                    border:1px solid {% if message.tags == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};">
+          {{ message }}
+        </div>
+      {% endfor %}
+      <script>
+        setTimeout(function() {
+          document.querySelectorAll('.django-message').forEach(function(el) {
+            el.style.display = 'none';
+          });
+        }, 4000);
+      </script>
     {% endif %}
     <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
     <h2>Bus Data Entry</h2>
@@ -228,66 +240,105 @@
     const dropdown = document.getElementById('busno_dropdown');
     const busOptions = dropdown.getElementsByTagName('li');
 
+    // Create array of valid bus numbers from Django template
+    const validBusNumbers = [
+        {% for bus in bus_numbers %}
+            "{{ bus }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
     busInput.addEventListener('focus', function() {
-      filterBusDropdown();
-      dropdown.style.display = 'block';
+        filterBusDropdown();
+        dropdown.style.display = 'block';
     });
     busInput.addEventListener('input', function() {
-      filterBusDropdown();
-      dropdown.style.display = 'block';
+        filterBusDropdown();
+        dropdown.style.display = 'block';
     });
     busInput.addEventListener('blur', function() {
-      setTimeout(() => { dropdown.style.display = 'none'; }, 150);
+        setTimeout(() => { 
+            dropdown.style.display = 'none';
+            validateBusNumber();
+        }, 150);
     });
     dropdown.addEventListener('mousedown', function(e) {
-      if (e.target.tagName === 'LI') {
-        busInput.value = e.target.textContent;
-        dropdown.style.display = 'none';
-      }
+        if (e.target.tagName === 'LI') {
+            busInput.value = e.target.textContent;
+            dropdown.style.display = 'none';
+            validateBusNumber(true);
+        }
     });
 
     function filterBusDropdown() {
-      const filter = busInput.value.trim().toLowerCase();
-      let anyVisible = false;
-      for (let li of busOptions) {
-        if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
-          li.style.display = '';
-          anyVisible = true;
-        } else {
-          li.style.display = 'none';
+        const filter = busInput.value.trim().toLowerCase();
+        let anyVisible = false;
+        for (let li of busOptions) {
+            if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
+                li.style.display = '';
+                anyVisible = true;
+            } else {
+                li.style.display = 'none';
+            }
         }
-      }
-      dropdown.style.display = anyVisible ? 'block' : 'none';
+        dropdown.style.display = anyVisible ? 'block' : 'none';
     }
+
+    // Validate bus number function
+    function validateBusNumber(isFromDropdown = false) {
+        const enteredBus = busInput.value.trim();
+        const isValid = validBusNumbers.includes(enteredBus);
+        
+        if (!isValid && enteredBus) {
+            busInput.style.border = '2px solid #ff6b81'; // Red border for error
+            if (!isFromDropdown) {
+                // Show error only if user typed manually
+                busInput.setCustomValidity('Please select a valid bus number from the list');
+            }
+        } else {
+            busInput.style.border = '1px solid var(--input-border)';
+            busInput.setCustomValidity('');
+        }
+        
+        busInput.reportValidity();
+        return isValid;
+    }
+
+    // Form submission validation
+    document.getElementById('busForm').addEventListener('submit', function(e) {
+        if (!validateBusNumber()) {
+            e.preventDefault();
+            busInput.focus();
+        }
+    });
 
     // SOC input validation
     const socInput = document.getElementById('soc');
     socInput.addEventListener('input', function() {
-      let value = parseFloat(this.value);
-      if (value > 100) this.value = 100;
-      if (value < 0) this.value = 0;
+        let value = parseFloat(this.value);
+        if (value > 100) this.value = 100;
+        if (value < 0) this.value = 0;
     });
 
     // Theme toggle
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const body = document.body;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-      body.classList.add('light');
-      themeToggleBtn.textContent = '🌙';
-      themeToggleBtn.title = 'Switch to dark theme';
-    } else {
-      themeToggleBtn.textContent = '☀️';
-      themeToggleBtn.title = 'Switch to light theme';
-    }
-    themeToggleBtn.addEventListener('click', function() {
-      body.classList.toggle('light');
-      if (body.classList.contains('light')) {
+        body.classList.add('light');
         themeToggleBtn.textContent = '🌙';
         themeToggleBtn.title = 'Switch to dark theme';
-      } else {
+    } else {
         themeToggleBtn.textContent = '☀️';
         themeToggleBtn.title = 'Switch to light theme';
-      }
+    }
+    themeToggleBtn.addEventListener('click', function() {
+        body.classList.toggle('light');
+        if (body.classList.contains('light')) {
+            themeToggleBtn.textContent = '🌙';
+            themeToggleBtn.title = 'Switch to dark theme';
+        } else {
+            themeToggleBtn.textContent = '☀️';
+            themeToggleBtn.title = 'Switch to light theme';
+        }
     });
 
     // Auto-calculate DIFF.
@@ -295,32 +346,33 @@
     const inkms = document.getElementById('inkms');
     const diff = document.getElementById('diff');
     function updateDiff() {
-      const out = parseFloat(outkms.value) || 0;
-      const inn = parseFloat(inkms.value) || 0;
-      diff.value = Math.abs(out - inn).toFixed(1);
+        const out = parseFloat(outkms.value) || 0;
+        const inn = parseFloat(inkms.value) || 0;
+        diff.value = Math.abs(out - inn).toFixed(1);
     }
     outkms.addEventListener('input', updateDiff);
     inkms.addEventListener('input', updateDiff);
 
     // Set date to today by default
     function setTodayDate() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
     }
     setTodayDate();
 
     // Retain SHIFT selection using localStorage
     const shiftSelect = document.getElementById('shift');
     if(localStorage.getItem('shiftValue')) {
-      shiftSelect.value = localStorage.getItem('shiftValue');
+        shiftSelect.value = localStorage.getItem('shiftValue');
     }
     shiftSelect.addEventListener('change', function() {
-      localStorage.setItem('shiftValue', shiftSelect.value);
+        localStorage.setItem('shiftValue', shiftSelect.value);
     });
-  </script>
+</script>
+
 </body>
 
 </html>

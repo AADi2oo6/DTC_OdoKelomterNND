@@ -74,15 +74,27 @@ def Entry(request):
         date = request.POST.get('date')
         shift = request.POST.get('shift')
         bus_no = request.POST.get('busno')
+        
+        # Check for existing entry
+        existing_entry = Bus_Data.objects.filter(
+            date=date,
+            bus_no=bus_no,
+            shift=shift
+        ).exists()
+
+        if existing_entry:
+            messages.error(request, f"❌ Entry already exists for this bus {bus_no}, {shift}, and {date}!")
+            return redirect('entry')
+
+        # Proceed if no duplicate exists
         out_kms = float(request.POST.get('outkms'))
-        in_kms = float(request.POST.get('inkms')) if request.POST.get('inkms') is not "" else 0.0
+        in_kms = float(request.POST.get('inkms')) if request.POST.get('inkms') != "" else 0.0
         soc = request.POST.get('soc') or "Not Provided"
         soc_in = request.POST.get('soc_in') or "Not Provided"
-        diff = abs(in_kms-out_kms)
+        diff = abs(in_kms - out_kms)
         india_tz = pytz_timezone('Asia/Kolkata')
         time_of_submission = timezone.now().astimezone(india_tz).strftime('%H:%M')
 
-        # Save to database
         Bus_Data.objects.create(
             date=date,
             shift=shift,
@@ -91,16 +103,17 @@ def Entry(request):
             in_kms=in_kms,
             diff=diff,
             soc=soc,
-            soc_in = soc_in,
+            soc_in=soc_in,
             time_of_submission=time_of_submission,
-            user_name = user_name
+            user_name=user_name
         )
-        messages.success(request, "✅ Bus data submitted successfully!")
-        return redirect('entry')  # change to your url name
+        messages.success(request, f"✅ Bus data for {bus_no}, {shift}, and {date} submitted successfully!")
+        return redirect('entry')
 
     return render(request, 'EntryForm.html', {
         'bus_numbers': BUS_NUMBERS,
-    })    
+    })
+
 
 def update_list(request):
     # Get distinct bus numbers from database
