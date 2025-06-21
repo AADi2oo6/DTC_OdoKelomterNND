@@ -97,6 +97,7 @@ def Entry(request):
         diff = abs(in_kms - out_kms)
         india_tz = pytz_timezone('Asia/Kolkata')
         time_of_submission = timezone.now().astimezone(india_tz).strftime('%H:%M')
+        in_time = timezone.now().astimezone(india_tz).strftime('%H:%M')
 
         # Create database entry
         entry = Bus_Data.objects.create(
@@ -109,6 +110,7 @@ def Entry(request):
             soc=soc,
             soc_in=soc_in,
             time_of_submission=time_of_submission,
+            IN_Time = in_time,
             user_name=user_name
         )
         
@@ -123,7 +125,8 @@ def Entry(request):
             soc,
             soc_in,
             time_of_submission,
-            user_name
+            user_name,
+            in_time
         ]
         SheetStatus = ""
         # Append to Google Sheet
@@ -143,26 +146,46 @@ def Entry(request):
     })
 
 
-def update_list(request):
-    # Get distinct bus numbers from database
+from datetime import datetime, timedelta
+import pytz
+
+def update_list(request, date=None):
     bus_numbers = Bus_Data.objects.order_by('bus_no').values_list('bus_no', flat=True).distinct()
     
-    # Handle filters
-    selected_bus = request.GET.get('bus_no')
-    selected_date = request.GET.get('date', timezone.now().date().isoformat())
+    # Handle date from URL or default to today
+    if date:
+        selected_date = date
+    else:
+        selected_date = request.GET.get('date', timezone.now().date().isoformat())
+    
+    # Convert to date object for filtering
+    try:
+        date_obj = datetime.strptime(selected_date, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        date_obj = timezone.now().date()
+        selected_date = date_obj.isoformat()
     
     # Query entries
     entries = Bus_Data.objects.all()
+    selected_bus = request.GET.get('bus_no')
+    
     if selected_bus:
         entries = entries.filter(bus_no=selected_bus)
-    if selected_date:
-        entries = entries.filter(date=selected_date)
+    entries = entries.filter(date=date_obj)
+    
+    # Calculate date navigation values
+    prev_date = (date_obj - timedelta(days=1)).strftime('%Y-%m-%d')
+    next_date = (date_obj + timedelta(days=1)).strftime('%Y-%m-%d')
+    today_date = timezone.now().date().strftime('%Y-%m-%d')
     
     return render(request, 'update_list.html', {
         'bus_numbers': bus_numbers,
         'entries': entries,
         'selected_bus': selected_bus,
         'selected_date': selected_date,
+        'prev_date': prev_date,
+        'next_date': next_date,
+        'today_date': today_date
     })
 
 
@@ -173,6 +196,8 @@ def edit_entry(request, entry_id):
         in_kms = request.POST.get('inkms')
         soc = request.POST.get('soc')
         soc_in = request.POST.get("soc_in")
+        india_tz = pytz_timezone('Asia/Kolkata')
+        IN_Time = timezone.now().astimezone(india_tz).strftime('%H:%M')
         
         # Store original values for Google Sheets update
         original_values = {
@@ -190,12 +215,25 @@ def edit_entry(request, entry_id):
             entry.soc = soc
         if soc_in:
             entry.soc_in = soc_in
-        
+        entry.IN_Time = IN_Time
         entry.save()
         india_tz = pytz_timezone('Asia/Kolkata')
         # Prepare data for Google Sheet update
+        # Ensure time fields are formatted as 'HH:MM' strings
+        time_of_submission = entry.time_of_submission
+        if hasattr(time_of_submission, 'strftime'):
+            time_of_submission_str = time_of_submission.strftime('%H:%M')
+        else:
+            time_of_submission_str = str(time_of_submission)
+
+        in_time_val = entry.IN_Time
+        if hasattr(in_time_val, 'strftime'):
+            in_time_str = in_time_val.strftime('%H:%M')
+        else:
+            in_time_str = str(in_time_val)
+
         sheet_data = {
-            'date': entry.date.strftime('%Y-%m-%d'),  # or isoformat() if that's your sheet's format
+            'date': entry.date.strftime('%Y-%m-%d'),
             'shift': entry.shift,
             'bus_no': entry.bus_no,
             'out_kms': str(entry.out_kms),
@@ -203,8 +241,9 @@ def edit_entry(request, entry_id):
             'diff': str(entry.diff),
             'soc': entry.soc,
             'soc_in': entry.soc_in,
-            'time':timezone.now().astimezone(india_tz).strftime('%H:%M'),
+            'time': time_of_submission_str,
             'user': entry.user_name,
+            'in_time': in_time_str
         }
         print(sheet_data)
         # Update Google Sheet
@@ -216,6 +255,6 @@ def edit_entry(request, entry_id):
             messages.info(request, "✅ Data updated locally. Google Sheets update failed.")
         
         messages.success(request, "✅ Entry updated successfully!")
-        return redirect('update_list')
+        return redirect(f'http://127.0.0.1:8000/update_list/{entry.date.strftime('%Y-%m-%d')}')
     
     return render(request, 'edit_entry.html', {'entry': entry})

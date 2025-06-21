@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,9 +19,11 @@
       --highlight-text: #23481b;
       --toggle-bg: #23283a;
     }
+
     body {
       font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       background: var(--bg-main);
       color: var(--text-main);
       display: flex;
@@ -29,16 +32,18 @@
       min-height: 100vh;
       transition: background 0.3s, color 0.3s;
     }
+
     .container {
       background: var(--bg-container);
       margin-top: 24px;
       padding: 20px 12px 16px 12px;
       border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
       width: 100%;
       max-width: 400px;
       position: relative;
     }
+
     .toggle-theme-btn {
       position: absolute;
       top: 10px;
@@ -55,30 +60,38 @@
       align-items: center;
       justify-content: center;
       transition: background 0.3s, color 0.3s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     }
+
     h2 {
       text-align: center;
       margin-bottom: 18px;
       font-weight: 600;
       letter-spacing: 0.5px;
     }
+
     form {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
+
     .form-row {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
+
     label {
       font-size: 15px;
       color: var(--text-muted);
       margin-bottom: 2px;
     }
-    input[type="text"], input[type="number"], input[type="date"], select {
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
       background: var(--input-bg);
       color: var(--text-main);
       padding: 10px;
@@ -88,15 +101,21 @@
       outline: none;
       transition: border 0.2s, background 0.3s, color 0.3s;
     }
-    input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus {
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus {
       border: 1.5px solid var(--primary);
     }
+
     .highlight {
       background: var(--highlight);
       color: var(--highlight-text);
       font-weight: bold;
       border: 1.5px solid #4caf50;
     }
+
     button[type="submit"] {
       background: var(--primary);
       color: #fff;
@@ -109,25 +128,33 @@
       margin-top: 10px;
       transition: background 0.2s;
     }
+
     button[type="submit"]:hover {
       background: var(--primary-hover);
     }
+
     ::placeholder {
       color: var(--text-muted);
       opacity: 1;
     }
+
     /* Custom styles for datalist search input */
     input[list]::-webkit-calendar-picker-indicator {
       display: none !important;
     }
+
     @media (max-width: 450px) {
       .container {
         padding: 10px 2px 10px 2px;
         margin-top: 8px;
       }
-      input, button, select {
+
+      input,
+      button,
+      select {
         font-size: 15px;
       }
+
       .toggle-theme-btn {
         top: 6px;
         right: 6px;
@@ -136,6 +163,7 @@
         font-size: 16px;
       }
     }
+
     /* Light Theme */
     body.light {
       --bg-main: #f6f8fa;
@@ -148,30 +176,49 @@
       --text-muted: #64748b;
       --highlight: #c6f6d5;
       --highlight-text: #22543d;
-      --toggle-bg: #e2e8f0; 
+      --toggle-bg: #e2e8f0;
+    }
+    .date-btn {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 600;
+      user-select: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .date-btn:hover {
+      background: var(--primary);
+      color: #fff;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     {% if messages %}
-      {% for message in messages %}
-        <div class="django-message" style="padding:10px;
+    {% for message in messages %}
+    <div class="django-message" style="padding:10px;
                     background:{% if message.tags == 'error' %}#f8d7da{% else %}#d4edda{% endif %};
                     color:{% if message.tags == 'error' %}#721c24{% else %}#155724{% endif %};
                     border-radius:5px;
                     margin-bottom:10px;
                     border:1px solid {% if message.tags == 'error' %}#f5c6cb{% else %}#c3e6cb{% endif %};">
-          {{ message }}
-        </div>
-      {% endfor %}
-      <script>
-        setTimeout(function() {
-          document.querySelectorAll('.django-message').forEach(function(el) {
-            el.style.display = 'none';
-          });
-        }, 4000);
-      </script>
+      {{ message }}
+    </div>
+    {% endfor %}
+    <script>
+      setTimeout(function () {
+        document.querySelectorAll('.django-message').forEach(function (el) {
+          el.style.display = 'none';
+        });
+      }, 4000);
+    </script>
     {% endif %}
     <button class="toggle-theme-btn" id="themeToggleBtn" title="Switch theme">🌙</button>
     <h2>Bus Data Entry</h2>
@@ -180,7 +227,13 @@
       <div class="form-row">
         <label for="date">DATE</label>
         <input type="date" id="date" name="date" required>
+        <div style="display: flex; gap: 5px; margin-top: 5px;">
+          <button type="button" class = "date-btn" id="prevDate" style="flex: 1;">←</button>
+          <button type="button" class = 'date-btn' id="resetDate" style="flex: 1;">Today</button>
+          <button type="button" class = 'date-btn' id="nextDate" style="flex: 1;">→</button>
+        </div>
       </div>
+
       <div class="form-row">
         <label for="shift">SHIFT</label>
         <select id="shift" name="shift" required>
@@ -191,18 +244,13 @@
       <!-- Custom searchable dropdown for Bus Number -->
       <div class="form-row" style="position:relative;">
         <label for="busno_input">Bus Number:</label>
-        <input 
-          type="text"
-          id="busno_input"
-          name="busno"
-          placeholder="Type or select bus number"
-          autocomplete="off"
+        <input type="text" id="busno_input" name="busno" placeholder="Type or select bus number" autocomplete="off"
           required
-          style="background: var(--input-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: 16px; outline: none; transition: border 0.2s, background 0.3s, color 0.3s;"
-        >
-        <ul id="busno_dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-top:none; border-radius:0 0 6px 6px; max-height:160px; overflow-y:auto; z-index:1000; margin:0; padding:0; list-style:none;">
+          style="background: var(--input-bg); color: var(--text-main); padding: 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: 16px; outline: none; transition: border 0.2s, background 0.3s, color 0.3s;">
+        <ul id="busno_dropdown"
+          style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--input-bg); color:var(--text-main); border:1px solid var(--input-border); border-top:none; border-radius:0 0 6px 6px; max-height:160px; overflow-y:auto; z-index:1000; margin:0; padding:0; list-style:none;">
           {% for bus in bus_numbers %}
-            <li style="padding:10px; cursor:pointer;">{{ bus }}</li>
+          <li style="padding:10px; cursor:pointer;">{{ bus }}</li>
           {% endfor %}
         </ul>
       </div>
@@ -212,7 +260,7 @@
       </div>
       <div class="form-row">
         <label for="inkms">IN KMs</label>
-        <input type="number" step="0.1" id="inkms" name="inkms" >
+        <input type="number" step="0.1" id="inkms" name="inkms">
       </div>
       <div class="form-row">
         <label for="diff">DIFF.</label>
@@ -220,18 +268,20 @@
       </div>
       <div class="form-row">
         <label for="soc">SOC (%)</label>
-        <input type="number" id="soc" name="soc" placeholder="0 to 100 %" min="0" max="100" step="0.1" >
+        <input type="number" id="soc" name="soc" placeholder="0 to 100 %" min="0" max="100" step="0.1">
       </div>
       <div class="form-row">
         <label for="soc_in">SOC_in (%)</label>
-        <input type="number" id="soc_in" name="soc_in" placeholder="0 to 100 %" min="0" max="100" step="0.1" >
+        <input type="number" id="soc_in" name="soc_in" placeholder="0 to 100 %" min="0" max="100" step="0.1">
       </div>
       <button type="submit">Submit</button>
     </form>
     <div style="text-align:center; margin-top:20px">
-      <a href="{% url 'update_list' %}" style="text-decoration:none">
-        <button style="background:#666; padding:8px 16px">🔄 Update Existing Values</button>
+      <a id="updateLink" href="{% url 'update_list' %}"
+        style="background:#666; padding:8px 16px; color:#fff; border-radius:4px; text-decoration:none; display:inline-block;">
+        🔄 Update Existing Values
       </a>
+
     </div>
   </div>
   <script>
@@ -242,103 +292,103 @@
 
     // Create array of valid bus numbers from Django template
     const validBusNumbers = [
-        {% for bus in bus_numbers %}
-            "{{ bus }}"{% if not forloop.last %},{% endif %}
-        {% endfor %}
+      {% for bus in bus_numbers %}
+    "{{ bus }}"{% if not forloop.last %}, {% endif %}
+    {% endfor %}
     ];
 
-    busInput.addEventListener('focus', function() {
-        filterBusDropdown();
-        dropdown.style.display = 'block';
+    busInput.addEventListener('focus', function () {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
     });
-    busInput.addEventListener('input', function() {
-        filterBusDropdown();
-        dropdown.style.display = 'block';
+    busInput.addEventListener('input', function () {
+      filterBusDropdown();
+      dropdown.style.display = 'block';
     });
-    busInput.addEventListener('blur', function() {
-        setTimeout(() => { 
-            dropdown.style.display = 'none';
-            validateBusNumber();
-        }, 150);
+    busInput.addEventListener('blur', function () {
+      setTimeout(() => {
+        dropdown.style.display = 'none';
+        validateBusNumber();
+      }, 150);
     });
-    dropdown.addEventListener('mousedown', function(e) {
-        if (e.target.tagName === 'LI') {
-            busInput.value = e.target.textContent;
-            dropdown.style.display = 'none';
-            validateBusNumber(true);
-        }
+    dropdown.addEventListener('mousedown', function (e) {
+      if (e.target.tagName === 'LI') {
+        busInput.value = e.target.textContent;
+        dropdown.style.display = 'none';
+        validateBusNumber(true);
+      }
     });
 
     function filterBusDropdown() {
-        const filter = busInput.value.trim().toLowerCase();
-        let anyVisible = false;
-        for (let li of busOptions) {
-            if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
-                li.style.display = '';
-                anyVisible = true;
-            } else {
-                li.style.display = 'none';
-            }
+      const filter = busInput.value.trim().toLowerCase();
+      let anyVisible = false;
+      for (let li of busOptions) {
+        if (!filter || li.textContent.toLowerCase().startsWith(filter)) {
+          li.style.display = '';
+          anyVisible = true;
+        } else {
+          li.style.display = 'none';
         }
-        dropdown.style.display = anyVisible ? 'block' : 'none';
+      }
+      dropdown.style.display = anyVisible ? 'block' : 'none';
     }
 
     // Validate bus number function
     function validateBusNumber(isFromDropdown = false) {
-        const enteredBus = busInput.value.trim();
-        const isValid = validBusNumbers.includes(enteredBus);
-        
-        if (!isValid && enteredBus) {
-            busInput.style.border = '2px solid #ff6b81'; // Red border for error
-            if (!isFromDropdown) {
-                // Show error only if user typed manually
-                busInput.setCustomValidity('Please select a valid bus number from the list');
-            }
-        } else {
-            busInput.style.border = '1px solid var(--input-border)';
-            busInput.setCustomValidity('');
+      const enteredBus = busInput.value.trim();
+      const isValid = validBusNumbers.includes(enteredBus);
+
+      if (!isValid && enteredBus) {
+        busInput.style.border = '2px solid #ff6b81'; // Red border for error
+        if (!isFromDropdown) {
+          // Show error only if user typed manually
+          busInput.setCustomValidity('Please select a valid bus number from the list');
         }
-        
-        busInput.reportValidity();
-        return isValid;
+      } else {
+        busInput.style.border = '1px solid var(--input-border)';
+        busInput.setCustomValidity('');
+      }
+
+      busInput.reportValidity();
+      return isValid;
     }
 
     // Form submission validation
-    document.getElementById('busForm').addEventListener('submit', function(e) {
-        if (!validateBusNumber()) {
-            e.preventDefault();
-            busInput.focus();
-        }
+    document.getElementById('busForm').addEventListener('submit', function (e) {
+      if (!validateBusNumber()) {
+        e.preventDefault();
+        busInput.focus();
+      }
     });
 
     // SOC input validation
     const socInput = document.getElementById('soc');
-    socInput.addEventListener('input', function() {
-        let value = parseFloat(this.value);
-        if (value > 100) this.value = 100;
-        if (value < 0) this.value = 0;
+    socInput.addEventListener('input', function () {
+      let value = parseFloat(this.value);
+      if (value > 100) this.value = 100;
+      if (value < 0) this.value = 0;
     });
 
     // Theme toggle
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const body = document.body;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-        body.classList.add('light');
+      body.classList.add('light');
+      themeToggleBtn.textContent = '🌙';
+      themeToggleBtn.title = 'Switch to dark theme';
+    } else {
+      themeToggleBtn.textContent = '☀️';
+      themeToggleBtn.title = 'Switch to light theme';
+    }
+    themeToggleBtn.addEventListener('click', function () {
+      body.classList.toggle('light');
+      if (body.classList.contains('light')) {
         themeToggleBtn.textContent = '🌙';
         themeToggleBtn.title = 'Switch to dark theme';
-    } else {
+      } else {
         themeToggleBtn.textContent = '☀️';
         themeToggleBtn.title = 'Switch to light theme';
-    }
-    themeToggleBtn.addEventListener('click', function() {
-        body.classList.toggle('light');
-        if (body.classList.contains('light')) {
-            themeToggleBtn.textContent = '🌙';
-            themeToggleBtn.title = 'Switch to dark theme';
-        } else {
-            themeToggleBtn.textContent = '☀️';
-            themeToggleBtn.title = 'Switch to light theme';
-        }
+      }
     });
 
     // Auto-calculate DIFF.
@@ -346,32 +396,80 @@
     const inkms = document.getElementById('inkms');
     const diff = document.getElementById('diff');
     function updateDiff() {
-        const out = parseFloat(outkms.value) || 0;
-        const inn = parseFloat(inkms.value) || 0;
-        diff.value = Math.abs(out - inn).toFixed(1);
+      const out = parseFloat(outkms.value) || 0;
+      const inn = parseFloat(inkms.value) || 0;
+      diff.value = Math.abs(out - inn).toFixed(1);
     }
     outkms.addEventListener('input', updateDiff);
     inkms.addEventListener('input', updateDiff);
 
+    // Date navigation functions
+    function changeDate(offset) {
+      const dateInput = document.getElementById('date');
+      let currentDate = new Date(dateInput.value);
+      currentDate.setDate(currentDate.getDate() + offset);
+
+      const yyyy = currentDate.getFullYear();
+      const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(currentDate.getDate()).padStart(2, '0');
+
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      localStorage.setItem('busFormDate', dateInput.value);
+      updateLinkWithDate(); // Update URL for update_list
+    }
+
+    // Event listeners for buttons
+    document.getElementById('prevDate').addEventListener('click', () => changeDate(-1));
+    document.getElementById('nextDate').addEventListener('click', () => changeDate(1));
+    document.getElementById('resetDate').addEventListener('click', function () {
+      setTodayDate();
+      localStorage.setItem('busFormDate', document.getElementById('date').value);
+      updateLinkWithDate(); // Update URL for update_list
+    });
+
+
     // Set date to today by default
     function setTodayDate() {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
     }
-    setTodayDate();
+
+    const dateInput = document.getElementById('date');
+
+    if (localStorage.getItem('busFormDate')) {
+      dateInput.value = localStorage.getItem('busFormDate');
+    } else if (!dateInput.value) {
+      setTodayDate();
+    }
+
+    dateInput.addEventListener('change', function () {
+      localStorage.setItem('busFormDate', dateInput.value);
+    });
+
 
     // Retain SHIFT selection using localStorage
     const shiftSelect = document.getElementById('shift');
-    if(localStorage.getItem('shiftValue')) {
-        shiftSelect.value = localStorage.getItem('shiftValue');
+    if (localStorage.getItem('shiftValue')) {
+      shiftSelect.value = localStorage.getItem('shiftValue');
     }
-    shiftSelect.addEventListener('change', function() {
-        localStorage.setItem('shiftValue', shiftSelect.value);
+    shiftSelect.addEventListener('change', function () {
+      localStorage.setItem('shiftValue', shiftSelect.value);
     });
-</script>
+
+    // Update update_list link with current date
+    function updateLinkWithDate() {
+      const dateInput = document.getElementById('date');
+      const updateLink = document.getElementById('updateLink');
+      updateLink.href = `/update_list/${dateInput.value}/`;
+    }
+
+    document.getElementById('date').addEventListener('change', updateLinkWithDate);
+    updateLinkWithDate();
+
+  </script>
 
 </body>
 

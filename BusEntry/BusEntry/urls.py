@@ -27,7 +27,8 @@ urlpatterns = [
     path('login/', views.login_user, name='login_user'),
     path('register/', views.register_user, name='register_user'),
     path('EntryForm/',views.Entry,name = "entry"),
-    path('update-list/', views.update_list, name='update_list'),
+    path('update_list/', views.update_list, name='update_list'),
+    path('update_list/<str:date>/', views.update_list, name='update_list'),
     path('edit-entry/<int:entry_id>/', views.edit_entry, name='edit_entry'),
     
 ]

@@ -225,7 +225,7 @@ html, body {
     <h2>Update Bus Data</h2>
     
     <!-- Search Form -->
-    <form method="GET" class="search-box" autocomplete="off">
+    <form method="GET" class="search-box" autocomplete="off" id="searchForm" style="display:flex; gap:10px; flex-wrap: wrap;">
       <div style="flex:1; min-width:120px; position:relative;">
         <input
           type="text"
@@ -243,12 +243,21 @@ html, body {
           {% endfor %}
         </ul>
       </div>
-      <input type="date" name="date" value="{{ selected_date }}" style="flex:1">
-      <button type="submit" style="flex:0.3">🔍 Search</button>
+
+      <div style="flex:1; min-width:180px; display:flex; flex-direction: column;">
+        <input type="date" name="date" id="dateInput" value="{{ selected_date }}" style="width:94%; padding:10px; border:1px solid var(--input-border); border-radius:6px; font-size:16px; color:var(--text-main); background:var(--input-bg); outline:none;">
+        <div style="display:flex; gap:5px; margin-top:5px;">
+          <a href="{% url 'update_list' prev_date %}{% if selected_bus %}?bus_no={{ selected_bus }}{% endif %}" class="date-btn" title="Previous Day">←</a>
+          <button type="button" id="resetDate" class="date-btn" title="Today">Today</button>
+          <a href="{% url 'update_list' next_date %}{% if selected_bus %}?bus_no={{ selected_bus }}{% endif %}" class="date-btn" title="Next Day">→</a>
+        </div>
+      </div>
+
+      <button type="submit" style="flex:0.3; min-width:80px; font-size:18px; cursor:pointer;">🔍 Search</button>
     </form>
 
-    <a href="{% url 'entry' %}" style="display:inline-block;margin-bottom:18px;background:var(--input-bg);color:var(--primary);padding:8px 18px;border-radius:5px;text-decoration:none;font-weight:500;transition:background 0.2s;">
-        ← Back
+    <a href="{% url 'entry' %}?date={{ selected_date }}" style="display:inline-block; margin:18px 0; background:var(--input-bg); color:var(--primary); padding:8px 18px; border-radius:5px; text-decoration:none; font-weight:500; transition:background 0.2s;">
+      ← Back
     </a>
 
     <!-- Entries as Cards -->
@@ -283,6 +292,31 @@ html, body {
     <p>No entries found.</p>
     {% endfor %}
   </div>
+
+  <style>
+    .date-btn {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 600;
+      user-select: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .date-btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    form.search-box > div {
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
 
   <!-- Theme toggle and dropdown filter JS -->
   <script>
@@ -344,7 +378,23 @@ html, body {
         themeToggleBtn.title = 'Switch to light theme';
       }
     });
+
+    // Reset date button functionality
+    document.getElementById('resetDate').addEventListener('click', function() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+
+      // Preserve bus_no param if selected
+      const urlParams = new URLSearchParams(window.location.search);
+      const busNo = urlParams.get('bus_no');
+      let url = `/update_list/${todayStr}/`;
+      if (busNo) {
+        url += `?bus_no=${encodeURIComponent(busNo)}`;
+      }
+      window.location.href = url;
+    });
   </script>
 </body>
-
-</html>

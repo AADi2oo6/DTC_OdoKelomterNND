@@ -31,21 +31,22 @@ def update_in_sheet(data):
     worksheet = spreadsheet.sheet1
 
     try:
-        cell = worksheet.find(str(data['id']), in_column=11)
+        cell = worksheet.find(str(data['id']), in_column=12)
         if cell:
             row_values = [
-                data['date'],
-                data['shift'],
-                data['bus_no'],
-                data['out_kms'],
-                data['in_kms'],
-                data['diff'],
-                data['soc'],
-                data['soc_in'],
-                data['time'],
-                data['user']
+            data['date'],
+            data['shift'],
+            data['bus_no'],
+            data['out_kms'],
+            data['in_kms'],
+            data['diff'],
+            data['soc'],
+            data['soc_in'],
+            data['time'],
+            data['user'],
+            data['in_time']
             ]
-            worksheet.update(f'A{cell.row}:J{cell.row}', [row_values])
+            worksheet.update(f'A{cell.row}:K{cell.row}', [row_values])
             return True
         return False
     except gspread.CellNotFound:  # CORRECTED EXCEPTION
@@ -118,9 +119,10 @@ def update_in_sheet(data):
                 data['soc'],
                 data['soc_in'],
                 data['time'],
-                data['user']
+                data['user'],
+                data['in_time']
             ]
-            worksheet.update(f'A{row_index}:J{row_index}', [row_values])
+            worksheet.update(f'A{row_index}:k{row_index}', [row_values])
             return True
         else:
             print(f"Entry with date={data['date']}, shift={data['shift']}, bus_no={data['bus_no']} not found in sheet")
